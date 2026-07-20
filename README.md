@@ -61,8 +61,8 @@ uv run pytest
 
 ## Configuring an LLM provider (optional)
 
-Copy your key(s) into `.streamlit/secrets.toml` (gitignored — never commit
-real keys):
+Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and fill in
+your key(s). `secrets.toml` is gitignored — never commit real keys:
 
 ```toml
 ANTHROPIC_API_KEY = "sk-ant-..."
