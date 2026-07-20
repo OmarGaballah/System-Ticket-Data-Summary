@@ -1,0 +1,42 @@
+[project]
+name = "ticket-data-summary"
+version = "0.1.0"
+description = "Streamlit app that turns raw system-ticket exports into per-product, five-phase customer stories."
+readme = "README.md"
+requires-python = ">=3.10"
+
+# Core runtime — enough for a fully working app. With zero API keys the app
+# still runs and shows a deterministic, grounded (LLM-free) view of every
+# story, so `uv sync` alone yields a demoable app. The real LLM SDKs are opt-in
+# (see the `llm` extra below): they add the narrated storytelling on top.
+dependencies = [
+    "streamlit>=1.40",
+    "pandas>=2.2",
+    "openpyxl>=3.1",        # Excel export
+]
+
+[project.optional-dependencies]
+# Real LLM providers. Install with:  uv sync --extra llm
+# Each is optional at runtime too (lazy import); a missing SDK is skipped.
+# DeepSeek uses the OpenAI-compatible client, so it needs no separate package.
+llm = [
+    "anthropic>=0.40",
+    "openai>=1.50",
+    "google-genai>=1.0",
+]
+
+[dependency-groups]
+# Synced by default. Dev-only tooling.
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
