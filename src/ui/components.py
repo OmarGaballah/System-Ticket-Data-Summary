@@ -44,6 +44,17 @@ def download_buttons(df: pd.DataFrame, basename: str = "cleaned_tickets") -> Non
     )
 
 
+def theme_hint() -> None:
+    """Point users at Streamlit's built-in Light/Dark/System theme switcher.
+
+    Not a custom toggle: the native switcher (top-right ⋮ → Settings → Theme)
+    already re-themes every widget, dataframe, and Altair chart consistently,
+    which a hand-rolled CSS override would risk getting only half right.
+    """
+    st.sidebar.caption("🌓 For different mode, use the **⋮ menu → Settings → Theme** "
+                       "picker in the top-right corner.")
+
+
 def removal_report(report: CleanReport) -> None:
     """Transparency panel: what the cleaning stage removed and why."""
     with st.expander("What was cleaned (transparency)"):

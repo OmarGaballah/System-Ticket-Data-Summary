@@ -106,13 +106,3 @@ docs/
                          shaped the code (anchor columns, phase logic, etc.)
 data/                    bundled sample export
 ```
-
-## Notes on the data
-
-The source export has quirks that are documented — with evidence, not
-guesses — in [`docs/implementation.md`](docs/implementation.md): a fixed
-anchor column used to realign shifted rows, why the `CAUSE` field often names
-a remedy rather than a fault, why story phases are assigned positionally
-rather than "semantically," and how repeat contacts are counted in occasions
-rather than raw ticket counts. Read that file before changing anything in
-`src/pipeline/clean.py`, `src/engine/episodes.py`, or `src/analysis/insights.py`.

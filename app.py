@@ -29,6 +29,8 @@ def load_pipeline(file_bytes: bytes):
     return run_pipeline(file_bytes)
 
 
+components.theme_hint()
+
 st.title("🎫 System Ticket Data Summary")
 st.caption("Upload a ticket export, then explore the five-phase story per "
            "product on the **Story Summary** page and trends on **Insights**.")

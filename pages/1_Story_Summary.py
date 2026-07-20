@@ -27,6 +27,7 @@ from src.report import story_report
 from src.ui import components, story_view
 
 st.set_page_config(page_title="Story Summary", page_icon="📖", layout="wide")
+components.theme_hint()
 st.title("📖 Story Summary")
 
 df = state.require_data()  

@@ -16,9 +16,10 @@ from src.analysis import exec_summary, insights
 from src.engine.providers import available_providers
 from src.report import insights_report
 from src.structs import DETERMINISTIC_PROVIDER
-from src.ui import charts
+from src.ui import charts, components
 
 st.set_page_config(page_title="Insights", page_icon="📊", layout="wide")
+components.theme_hint()
 st.title("📊 Insights")
 st.caption("Operational analysis — each finding pairs a metric with a recommended action.")
 
@@ -61,6 +62,16 @@ def _summary(data, provider_name, _code: str):
 
 written = None
 
+for ins in results:
+    with st.container(border=True):
+        st.subheader(ins.title)
+        st.caption(ins.question)
+        if ins.has_signal:
+            st.altair_chart(charts.insight_chart(ins), width="stretch", theme="streamlit")
+        st.markdown(f"**So what →** {ins.takeaway}")
+        with st.expander("Show data"):
+            st.dataframe(ins.data, hide_index=True, width="stretch")
+
 with st.container(border=True):
     head, pick = st.columns([3, 1])
     head.subheader("Executive summary")
@@ -91,7 +102,7 @@ with st.container(border=True):
                      help="Re-run the summary — this re-bills the provider"):
             try:
                 _summary.clear(df, provider_name, version.code_fingerprint())
-            except TypeError:      
+            except TypeError:
                 _summary.clear()
         es = written = _summary(df, provider_name, version.code_fingerprint())
 
@@ -101,16 +112,6 @@ with st.container(border=True):
             for action in es.top_actions:
                 st.markdown(f"- {action}")
         st.caption(es.attribution() + (f" {es.note}" if es.note else ""))
-
-for ins in results:
-    with st.container(border=True):
-        st.subheader(ins.title)
-        st.caption(ins.question)
-        if ins.has_signal:
-            st.altair_chart(charts.insight_chart(ins), width="stretch", theme="streamlit")
-        st.markdown(f"**So what →** {ins.takeaway}")
-        with st.expander("Show data"):
-            st.dataframe(ins.data, hide_index=True, width="stretch")
 
 st.download_button(
     "⬇ Download this report (HTML)",
