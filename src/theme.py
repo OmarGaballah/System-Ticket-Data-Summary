@@ -38,3 +38,65 @@ ROW_GRID = "#f2efea"
 SERIF = 'Iowan Old Style, "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif'
 SANS = ('-apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif')
 MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
+
+
+# ---------------------------------------------------------------------------
+# Chart palettes for the on-screen Altair charts (``ui/charts.py``) only.
+#
+# The printable HTML report (``report/layout.py``) always renders on paper —
+# white/cream, dark ink — regardless of the app's theme, so it keeps the
+# colours above unconditionally. The Streamlit charts, however, sit on
+# whatever background the *user* picked (Light/Dark/System in the app's
+# Settings menu), and the paper palette's near-black label colour and warm
+# beige "neutral" bar both lose their intended contrast on a dark background:
+# the label reads as washed-out grey instead of legible text, and the
+# "neutral" bar — meant to recede — becomes one of the loudest marks on
+# screen. A second, dark-background-tuned palette fixes that without
+# touching the report.
+class ChartPalette:
+    """One named set of chart colours — light or dark."""
+
+    def __init__(self, *, accent: str, neutral: str, residual: str,
+                 neutral_dark: str, ink_soft: str, axis: str, grid: str,
+                 row_grid: str, label_on_mark: str) -> None:
+        self.accent = accent                  # the one bar/point a finding acts on
+        self.neutral = neutral                # ordinary bars
+        self.residual = residual              # dimmer still — the "Other" bucket
+        self.neutral_dark = neutral_dark      # timeline: plain (non-highlighted) point
+        self.ink_soft = ink_soft              # category / y-axis labels
+        self.axis = axis                      # secondary tick labels (smaller, dimmer)
+        self.grid = grid                      # gridlines
+        self.row_grid = row_grid              # timeline row gridlines (subtler than grid)
+        self.label_on_mark = label_on_mark    # text drawn on top of a filled marker
+
+
+CHART_LIGHT = ChartPalette(
+    accent=ACCENT, neutral=CHART_NEUTRAL, residual=CHART_RESIDUAL,
+    neutral_dark=NEUTRAL_DARK, ink_soft=INK_SOFT, axis=AXIS,
+    grid=GRID, row_grid=ROW_GRID, label_on_mark=PAPER,
+)
+
+CHART_DARK = ChartPalette(
+    accent="#2dd4bf", neutral="#475569", residual="#334155",
+    neutral_dark="#64748b", ink_soft="#cbd5e1", axis="#94a3b8",
+    grid="#1e293b", row_grid="#161f2e", label_on_mark="#f8fafc",
+)
+
+
+def active_chart_palette() -> ChartPalette:
+    """The palette matching the user's live Light/Dark choice, light by default.
+
+    ``st.context.theme.type`` reflects the *actual* rendered theme (it is
+    inferred from the background colour), not just what ``config.toml``
+    declares, so this tracks the Settings-menu switcher live. Outside a
+    running app (e.g. a test building a chart directly) there is no script
+    context and it resolves to ``None``, which falls back to light — the
+    same chart the printable report already uses.
+    """
+    try:
+        import streamlit as st
+        if st.context.theme.type == "dark":
+            return CHART_DARK
+    except Exception:
+        pass
+    return CHART_LIGHT

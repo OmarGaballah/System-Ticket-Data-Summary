@@ -18,8 +18,7 @@ from __future__ import annotations
 import altair as alt
 
 from src.analysis.insights import Insight
-from src.theme import (ACCENT, AXIS, CHART_NEUTRAL, CHART_RESIDUAL, GRID,
-                       INK_SOFT, NEUTRAL_DARK, PAPER, ROW_GRID)
+from src.theme import active_chart_palette
 
 
 def _fmt(unit: str) -> str:
@@ -41,20 +40,21 @@ def timeline_chart(ins: Insight) -> alt.LayerChart:
     who compares the page with the exported PDF must not find two different
     pictures of the same fortnight.
     """
+    p = active_chart_palette()
     d = ins.data.copy()
     counts = d.groupby("pair").size().sort_values(ascending=False, kind="stable")
     order = list(counts.index)
 
-    d["_role"] = ["spot" if p == ins.highlight else "plain" for p in d["pair"]]
+    d["_role"] = ["spot" if p_ == ins.highlight else "plain" for p_ in d["pair"]]
     color = alt.Color("_role:N", legend=None, scale=alt.Scale(
-        domain=["plain", "spot"], range=[NEUTRAL_DARK, ACCENT]))
+        domain=["plain", "spot"], range=[p.neutral_dark, p.accent]))
 
     y = alt.Y("pair:N", sort=order, title=None,
               axis=alt.Axis(labelLimit=260, domain=False, ticks=False,
-                            labelColor=INK_SOFT, grid=True, gridColor=ROW_GRID))
+                            labelColor=p.ink_soft, grid=True, gridColor=p.row_grid))
     x = alt.X("date:T", title=None,
-              axis=alt.Axis(format="%d %b", grid=True, gridColor=GRID,
-                            domain=False, ticks=False, labelColor=AXIS,
+              axis=alt.Axis(format="%d %b", grid=True, gridColor=p.grid,
+                            domain=False, ticks=False, labelColor=p.axis,
                             labelFontSize=10, tickCount=6))
     tooltip = [
         alt.Tooltip("pair:N", title="Customer · product"),
@@ -67,7 +67,7 @@ def timeline_chart(ins: Insight) -> alt.LayerChart:
         size=alt.Size("tickets:Q", legend=None,
                       scale=alt.Scale(domain=[1, 4], range=[90, 320])))
     labels = alt.Chart(d[d["tickets"] > 1]).mark_text(
-        color=PAPER, fontSize=9, fontWeight="bold").encode(
+        color=p.label_on_mark, fontSize=9, fontWeight="bold").encode(
         y=y, x=x, text=alt.Text("tickets:Q"))
 
     height = max(130, len(order) * 30)
@@ -79,6 +79,7 @@ def _bar_chart(ins: Insight, max_bars: int = 10) -> alt.LayerChart:
     cat, val = ins.x, ins.y
     fmt = _fmt(ins.unit)
 
+    p = active_chart_palette()
     d = ins.plot_frame(max_bars)
     top, ticks = ins.axis(d)
 
@@ -93,16 +94,16 @@ def _bar_chart(ins: Insight, max_bars: int = 10) -> alt.LayerChart:
         d.loc[d[cat] == ins.highlight, "_role"] = "spot"
     color = alt.Color("_role:N", legend=None, scale=alt.Scale(
         domain=["plain", "spot", "residual"],
-        range=[CHART_NEUTRAL, ACCENT, CHART_RESIDUAL]))
+        range=[p.neutral, p.accent, p.residual]))
 
     y = alt.Y("_label:N", sort=order, title=None,
               axis=alt.Axis(labelLimit=260, domain=False, ticks=False,
-                            labelColor=INK_SOFT))
+                            labelColor=p.ink_soft))
     x = alt.X(f"{val}:Q", title=None,
               scale=alt.Scale(domain=[0, top], nice=False),
               axis=alt.Axis(values=ticks, format=fmt, grid=True,
-                            gridColor=GRID, domain=False, ticks=False,
-                            labelColor=AXIS, labelFontSize=10))
+                            gridColor=p.grid, domain=False, ticks=False,
+                            labelColor=p.axis, labelFontSize=10))
     tooltip = [
         alt.Tooltip(f"{cat}:N", title=cat.replace("_", " ").title()),
         alt.Tooltip(f"{val}:Q", title=val.replace("_", " ").title(), format=fmt),
@@ -110,7 +111,7 @@ def _bar_chart(ins: Insight, max_bars: int = 10) -> alt.LayerChart:
 
     bars = alt.Chart(d).mark_bar(cornerRadiusEnd=2, height={"band": 0.62}).encode(
         y=y, x=x, color=color, tooltip=tooltip)
-    labels = alt.Chart(d).mark_text(align="left", dx=6, color=INK_SOFT,
+    labels = alt.Chart(d).mark_text(align="left", dx=6, color=p.ink_soft,
                                     fontSize=12).encode(
         y=y, x=x, text=alt.Text(f"{val}:Q", format=fmt))
 
